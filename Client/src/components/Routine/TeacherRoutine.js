@@ -46,27 +46,27 @@ const TeacherRoutine = () => {
     return colorMap.get(key);
   };
 
+  const fetchRoutines = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/class-slots');
+      const slots = response.data;
+
+      const sortedRoutines = slots.sort((a, b) => {
+        if (a.day !== b.day) return days.indexOf(a.day) - days.indexOf(b.day);
+        if (a.startTime !== b.startTime) return a.startTime.localeCompare(b.startTime);
+        return 0;
+      });
+
+      setRoutines(sortedRoutines);
+      setLoading(false);
+    } catch (error) {
+      setError('Failed to fetch routines');
+      setLoading(false);
+      toast.error('Failed to fetch routines', { autoClose: 2000 });
+    }
+  };
+
   useEffect(() => {
-    const fetchRoutines = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/class-slots');
-        const slots = response.data;
-
-        const sortedRoutines = slots.sort((a, b) => {
-          if (a.day !== b.day) return days.indexOf(a.day) - days.indexOf(b.day);
-          if (a.startTime !== b.startTime) return a.startTime.localeCompare(b.startTime);
-          return 0;
-        });
-
-        setRoutines(sortedRoutines);
-        setLoading(false);
-      } catch (error) {
-        setError('Failed to fetch routines');
-        setLoading(false);
-        toast.error('Failed to fetch routines', { autoClose: 2000 });
-      }
-    };
-
     fetchRoutines();
   }, []);
 
@@ -110,10 +110,26 @@ const TeacherRoutine = () => {
     return true;
   });
 
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 text-xl mt-10">{error}</div>;
+  }
+
   const todayRoutines = routines.filter(routine => routine.day === today && routine.teacherId === user.teacherId);
   const groupedFilteredRoutines = groupRoutinesByDay(filteredRoutines);
   const groupedTodayRoutines = groupRoutinesByDay(todayRoutines);
   const groupedTeacherRoutines = groupRoutinesByDay(routines.filter(routine => routine.teacherId === user.teacherId));
+
+  const calculateColSpan = (startTime, endTime) => {
+    const startIndex = timeSlots.findIndex(slot => slot.start === startTime);
+    const endIndex = timeSlots.findIndex(slot => slot.end === endTime);
+    return endIndex - startIndex + 1;
+  };
 
   const renderTable = (groupedRoutines) => {
     const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
@@ -143,26 +159,30 @@ const TeacherRoutine = () => {
                             <td className="border border-gray-300 p-2 font-semibold">{`${semester} Semester`}</td>
                             {timeSlots.map((slot, timeIndex) => {
                               const routinesInSlot = routinesInSemester.filter(routine => routine.startTime === slot.start);
-                              return (
-                                <td key={timeIndex} className="border border-gray-300 p-2">
-                                  {routinesInSlot.map((routine, index) => {
-                                    const color = getColorForSlot(routine);
-                                    return (
-                                      <div key={index} className="border border-gray-300 p-2 rounded shadow mb-2" style={{ backgroundColor: color }}>
-                                        <p><strong>Class:</strong> {routine.courseId} ({routine.classType === 'Lab' ? 'L' : 'T'})</p>
-                                        <p><strong>Teacher:</strong> {routine.teacherName}</p>
-                                        <p><strong>Room:</strong> {routine.roomNo}</p>
-                                        <p><strong>Section:</strong> {routine.section}</p>
-                                        {routine.teacherId === user.teacherId && (
-                                          <Link to={`/teacher/reschedule-routine/${routine._id}`} className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition duration-300">
-                                            Edit
-                                          </Link>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </td>
-                              );
+                              if (routinesInSlot.length > 0) {
+                                const routine = routinesInSlot[0];
+                                return (
+                                  <td key={timeIndex} className="border border-gray-300 p-2" colSpan={calculateColSpan(routine.startTime, routine.endTime)}>
+                                    {routinesInSlot.map((routine, index) => {
+                                      const color = getColorForSlot(routine);
+                                      return (
+                                        <div key={index} className="border border-gray-300 p-2 rounded shadow mb-2" style={{ backgroundColor: color }}>
+                                          <p><strong>Class:</strong> {routine.courseId} ({routine.classType === 'Lab' ? 'L' : 'T'})</p>
+                                          <p><strong>Teacher:</strong> {routine.teacherName}</p>
+                                          <p><strong>Room:</strong> {routine.roomNo}</p>
+                                          <p><strong>Section:</strong> {routine.section}</p>
+                                          {routine.teacherId === user.teacherId && (
+                                            <Link to={`/teacher/reschedule-routine/${routine._id}`} className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition duration-300">
+                                              Edit
+                                            </Link>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </td>
+                                );
+                              }
+                              return <td key={timeIndex} className="border border-gray-300 p-2"></td>;
                             })}
                           </tr>
                         );

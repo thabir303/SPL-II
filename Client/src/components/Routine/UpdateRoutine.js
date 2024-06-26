@@ -153,15 +153,16 @@ const UpdateRoutine = () => {
       toast.error('Failed to update routine', { autoClose: 2000 });
     }
   };
-
+  
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-center text-red-500 text-xl mt-10">{error}</div>;
   }
-
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-md p-6 sm:p-8 w-full max-w-3xl">

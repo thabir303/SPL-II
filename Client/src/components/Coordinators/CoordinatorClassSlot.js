@@ -30,8 +30,16 @@ const CoordinatorClassSlot = () => {
 
   useEffect(() => {
     const fetchCoordinatorDetails = async () => {
+      if (!user || !user.coordinatorId) {
+        setError('Coordinator ID is missing');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(`http://localhost:5000/api/coordinators/E18`);
+        console.log('Fetching coordinator details for ID:', user.coordinatorId);
+
+        const response = await axios.get(`http://localhost:5000/api/coordinators/${user.coordinatorId}`);
         setCoordinatorSemester(response.data.semesterName);
 
         const slotsResponse = await axios.get(`http://localhost:5000/api/class-slots/semester/${response.data.semesterName}`);
@@ -45,7 +53,7 @@ const CoordinatorClassSlot = () => {
     };
 
     fetchCoordinatorDetails();
-  }, [user.coordinatorId]);
+  }, [user]);
 
   const handleDelete = async () => {
     try {

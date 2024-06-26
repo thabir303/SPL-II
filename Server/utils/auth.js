@@ -18,6 +18,7 @@ const generateToken = (user) => {
     userId: user._id,
     role: user.role,
     teacherId: user.teacherId || null,
+    coordinatorId : user.coordinatorId || null
   };
 
   console.log("Generating token with payload:", payload);

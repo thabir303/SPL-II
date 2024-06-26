@@ -30,25 +30,21 @@ const FullRoutine = () => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
 
   const colors = [
-    '#FFC107', // Amber
-    '#FF9800', // Orange
-    '#FF5722', // Deep Orange
-    '#F44336', // Red
-    '#E91E63', // Pink
-    '#9C27B0', // Purple
-    '#673AB7', // Deep Purple
-    '#3F51B5', // Indigo
-    '#2196F3', // Blue
-    '#03A9F4', // Light Blue
-    '#00BCD4', // Cyan
-    '#009688', // Teal
-    '#4CAF50', // Green
-    '#8BC34A', // Light Green
-    '#CDDC39', // Lime
-    '#FFEB3B', // Yellow
-    '#FFC107', // Amber
-    '#FF9800', // Orange
-    '#795548'  // Brown
+    '#E3F2FD', // Light Blue
+    '#E8F5E9', // Light Green
+    '#FFF3E0', // Light Orange
+    '#F3E5F5', // Light Purple
+    '#E0F2F1', // Light Teal
+    '#FBE9E7', // Light Deep Orange
+    '#FFF9C4', // Light Yellow
+    '#F1F8E9', // Light Light Green
+    '#E1F5FE', // Lighter Blue
+    '#E0F7FA', // Light Cyan
+    '#F9FBE7', // Light Lime
+    '#EFEBE9', // Light Brown
+    '#ECEFF1', // Light Blue Grey
+    '#FCE4EC', // Light Pink
+    '#E8EAF6', // Light Indigo
   ];
 
   const colorMap = new Map();
@@ -185,11 +181,13 @@ const FullRoutine = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-center text-red-500 text-xl mt-10">{error}</div>;
   }
 
   const semesters = Array.from(new Set(routines.map(slot => slot.semesterName))).sort();
@@ -199,7 +197,7 @@ const FullRoutine = () => {
   return (
     <div className="p-6">
       <h2 className="text-4xl font-bold mb-6 text-center">View Routine</h2>
-      <div className="flex justify-center mb-6">
+      <div className="flex flex-wrap justify-center mb-6 gap-4">
         <select
           value={selectedSemester}
           onChange={handleSemesterChange}
@@ -215,7 +213,7 @@ const FullRoutine = () => {
         <select
           value={selectedTeacher}
           onChange={handleTeacherChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Teacher</option>
           {teachers.map((teacher) => (
@@ -227,7 +225,7 @@ const FullRoutine = () => {
         <select
           value={selectedSection}
           onChange={handleSectionChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Section</option>
           {sections.map((section) => (
@@ -239,7 +237,7 @@ const FullRoutine = () => {
         <select
           value={selectedDay}
           onChange={handleDayChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Day</option>
           {days.map((day) => (
@@ -254,28 +252,30 @@ const FullRoutine = () => {
         return (
           <div key={index} className="mt-8">
             <h3 className={`text-xl mb-4 font-bold ${semesterColors[index % semesterColors.length]}`}>{semester} Semester</h3>
-            <table className="min-w-full border-collapse border border-gray-400">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="border border-gray-300 p-2">Time/Day</th>
-                  {timeSlots.map((slot, index) => (
-                    <th key={index} className="border border-gray-300 p-2">{slot.label || `${slot.start}-${slot.end}`}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {days.map((day, dayIndex) => (
-                  <tr key={dayIndex} className="even:bg-gray-50">
-                    <td className={`border border-gray-300 p-2 font-semibold ${dayColors[dayIndex % dayColors.length]}`}>{day}</td>
-                    {timeSlots.map((_, timeIndex) => (
-                      <td key={timeIndex} className="border border-gray-300 p-2">
-                        {table[dayIndex][timeIndex]}
-                      </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse border border-gray-400">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-300 p-2">Time/Day</th>
+                    {timeSlots.map((slot, index) => (
+                      <th key={index} className="border border-gray-300 p-2">{slot.label || `${slot.start}-${slot.end}`}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {days.map((day, dayIndex) => (
+                    <tr key={dayIndex} className="even:bg-gray-50">
+                      <td className={`border border-gray-300 p-2 font-semibold ${dayColors[dayIndex % dayColors.length]}`}>{day}</td>
+                      {timeSlots.map((_, timeIndex) => (
+                        <td key={timeIndex} className="border border-gray-300 p-2">
+                          {table[dayIndex][timeIndex]}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         );
       })}

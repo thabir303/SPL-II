@@ -29,7 +29,7 @@ const RescheduleRoutine = () => {
   const [sections, setSections] = useState([]);
   const [assignedCourses, setAssignedCourses] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,7 +114,7 @@ const RescheduleRoutine = () => {
     try {
       await axios.put(`http://localhost:5000/api/class-slots/${id}`, formData);
       toast.success('Routine updated successfully', { autoClose: 2000 });
-      navigate('/teacher/routine');
+      navigate('/teacher/routine'); // Trigger re-fetch by navigating back to the routine list
     } catch (error) {
       if (error.response && error.response.data) {
         const errorMessage = Array.isArray(error.response.data.error)
@@ -128,8 +128,14 @@ const RescheduleRoutine = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
   }
+
+  // if (error) {
+  //   return <div className="text-center text-red-500 text-xl mt-10">{error}</div>;
+  // }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">

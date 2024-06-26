@@ -32,7 +32,7 @@ const FullRoutine = () => {
   useEffect(() => {
     const fetchRoutines = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/full-routines');
+        const response = await axios.get('http://localhost:5000/api/class-slots');
         const slots = response.data;
 
         const slotsWithTeacherNames = await Promise.all(
@@ -132,7 +132,7 @@ const FullRoutine = () => {
           table[dayIndex][startTimeIndex + i].push(
             <div key={`${slot._id}-${i}`} className="border border-gray-300 p-2 bg-white rounded shadow mb-2">
               <p><strong>Class:</strong> {slot.courseId} ({slot.classType === 'Lab' ? 'L' : 'T'})</p>
-              <p><strong>Teacher:</strong> {slot.teacherName}</p>
+              <p><strong>Teacher:</strong> {slot.teacherId}</p>
               <p><strong>Room:</strong> {slot.roomNo}</p>
               <p><strong>Section:</strong> {slot.section}</p>
             </div>

@@ -242,6 +242,7 @@ router.post("/login", async (req, res) => {
       role: user.role,
       status: user.status,
       teacherId: user.teacherId,
+      coordinatorId: user.coordinatorId,
     };
 
     // Generate a token for the user
@@ -308,9 +309,10 @@ router.post('/program-chair', async (req, res) => {
 
 // Route for creating a new coordinator (accessible only to program chair)
 // Route for creating a new coordinator (accessible only to program chair)
+
 router.post("/coordinators", async (req, res) => {
   try {
-    const { name, email, password, batchNo, coordinatorId, expired_date, semesterName } = req.body;
+    const { name, email, password, batchNo, coordinatorId, expired_date } = req.body;
 
     // Check if the coordinator already exists
     const existingCoordinator = await Coordinator.findOne({ email });
@@ -335,7 +337,8 @@ router.post("/coordinators", async (req, res) => {
     if (existingBatchNo) {
       return res.status(400).json({ error: "Batch number already assigned to another coordinator" });
     }
-    const batch = await Batch.findOne({batchNo});
+
+    const batch = await Batch.findOne({ batchNo });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -347,19 +350,20 @@ router.post("/coordinators", async (req, res) => {
       password: hashedPassword,
       batchNo,
       expired_date: new Date(expired_date),
-      semesterName : batch.semesterName,
+      semesterName: batch.semesterName,
     });
 
     await newCoordinator.save();
 
     // Create a new User document
     const newUser = new User({
-      userId: coordinatorId,
+      userId : coordinatorId,
       name,
       email,
       password: hashedPassword,
       role: "coordinator",
       status: "approved", // Automatically approved
+      coordinatorId : coordinatorId,
       semesterName: batch.semesterName,
     });
 
