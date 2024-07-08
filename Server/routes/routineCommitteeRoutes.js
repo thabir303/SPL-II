@@ -15,8 +15,7 @@
 //     secure:true,
 //     auth: {
 
-//       user: 'tanvirhasanabir8@gmail.com',
-//       pass: 'pyru dtnh ohce cujg',
+//      
 
 //       // user: process.env.USER, // Your email address
 //       // pass: process.env.APP_PASSWORD, // Your email password
