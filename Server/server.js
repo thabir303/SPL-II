@@ -12,7 +12,7 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://bsse1321:Abir123@restapi.nkqy7wr.mongodb.net/SPL-II?retryWrites=true&w=majority', {
+mongoose.connect('your_mongodb_url', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
