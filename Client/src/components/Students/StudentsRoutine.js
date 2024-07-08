@@ -29,15 +29,44 @@ const FullRoutine = () => {
 
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
 
+  const colors = [
+    '#E3F2FD', // Light Blue
+    '#E8F5E9', // Light Green
+    '#FFF3E0', // Light Orange
+    '#F3E5F5', // Light Purple
+    '#E0F2F1', // Light Teal
+    '#FBE9E7', // Light Deep Orange
+    '#FFF9C4', // Light Yellow
+    '#F1F8E9', // Light Light Green
+    '#E1F5FE', // Lighter Blue
+    '#E0F7FA', // Light Cyan
+    '#F9FBE7', // Light Lime
+    '#EFEBE9', // Light Brown
+    '#ECEFF1', // Light Blue Grey
+    '#FCE4EC', // Light Pink
+    '#E8EAF6', // Light Indigo
+  ];
+
+  const colorMap = new Map();
+
+  const getColorForSlot = (slot) => {
+    const key = `${slot.courseId}-${slot.section}-${slot.teacherId}`;
+    if (!colorMap.has(key)) {
+      const color = colors[colorMap.size % colors.length];
+      colorMap.set(key, color);
+    }
+    return colorMap.get(key);
+  };
+
   useEffect(() => {
     const fetchRoutines = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/full-routines');
+        const response = await axios.get('http://localhost:5000/api/class-slots');
         const slots = response.data;
 
         const slotsWithTeacherNames = await Promise.all(
           slots.map(async (slot) => {
-            const teacherResponse = await axios.get(`http://localhost:5000/api/teachers/${slot.teacherId}`);
+            const teacherResponse = await axios.get(`http://localhost:5000/api/class-slots/${slot._id}/${slot.teacherId}`);
             return { ...slot, teacherName: teacherResponse.data.teacherName };
           })
         );
@@ -123,6 +152,7 @@ const FullRoutine = () => {
       const dayIndex = days.indexOf(slot.day);
       const startTimeIndex = timeSlots.findIndex(t => t.start === slot.startTime);
       const colSpan = calculateColSpan(slot.startTime, slot.endTime);
+      const color = getColorForSlot(slot);
 
       if (dayIndex !== -1 && startTimeIndex !== -1) {
         for (let i = 0; i < colSpan; i++) {
@@ -130,7 +160,7 @@ const FullRoutine = () => {
             table[dayIndex][startTimeIndex + i] = [];
           }
           table[dayIndex][startTimeIndex + i].push(
-            <div key={`${slot._id}-${i}`} className="border border-gray-300 p-2 bg-white rounded shadow mb-2">
+            <div key={`${slot._id}-${i}`} className="border border-gray-300 p-2 rounded shadow mb-2" style={{ backgroundColor: color }}>
               <p><strong>Class:</strong> {slot.courseId} ({slot.classType === 'Lab' ? 'L' : 'T'})</p>
               <p><strong>Teacher:</strong> {slot.teacherName}</p>
               <p><strong>Room:</strong> {slot.roomNo}</p>
@@ -167,7 +197,7 @@ const FullRoutine = () => {
   return (
     <div className="p-6">
       <h2 className="text-4xl font-bold mb-6 text-center">View Routine</h2>
-      <div className="flex justify-center mb-6">
+      <div className="flex flex-wrap justify-center mb-6 gap-4">
         <select
           value={selectedSemester}
           onChange={handleSemesterChange}
@@ -183,7 +213,7 @@ const FullRoutine = () => {
         <select
           value={selectedTeacher}
           onChange={handleTeacherChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Teacher</option>
           {teachers.map((teacher) => (
@@ -195,7 +225,7 @@ const FullRoutine = () => {
         <select
           value={selectedSection}
           onChange={handleSectionChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Section</option>
           {sections.map((section) => (
@@ -207,7 +237,7 @@ const FullRoutine = () => {
         <select
           value={selectedDay}
           onChange={handleDayChange}
-          className="w-64 p-3 ml-4 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          className="w-64 p-3 border border-gray-300 rounded shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
         >
           <option value="All">Sort By Day</option>
           {days.map((day) => (
@@ -222,28 +252,30 @@ const FullRoutine = () => {
         return (
           <div key={index} className="mt-8">
             <h3 className={`text-xl mb-4 font-bold ${semesterColors[index % semesterColors.length]}`}>{semester} Semester</h3>
-            <table className="min-w-full border-collapse border border-gray-400">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="border border-gray-300 p-2">Time/Day</th>
-                  {timeSlots.map((slot, index) => (
-                    <th key={index} className="border border-gray-300 p-2">{slot.label || `${slot.start}-${slot.end}`}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {days.map((day, dayIndex) => (
-                  <tr key={dayIndex} className="even:bg-gray-50">
-                    <td className={`border border-gray-300 p-2 font-semibold ${dayColors[dayIndex % dayColors.length]}`}>{day}</td>
-                    {timeSlots.map((_, timeIndex) => (
-                      <td key={timeIndex} className="border border-gray-300 p-2">
-                        {table[dayIndex][timeIndex]}
-                      </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse border border-gray-400">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-300 p-2">Time/Day</th>
+                    {timeSlots.map((slot, index) => (
+                      <th key={index} className="border border-gray-300 p-2">{slot.label || `${slot.start}-${slot.end}`}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {days.map((day, dayIndex) => (
+                    <tr key={dayIndex} className="even:bg-gray-50">
+                      <td className={`border border-gray-300 p-2 font-semibold ${dayColors[dayIndex % dayColors.length]}`}>{day}</td>
+                      {timeSlots.map((_, timeIndex) => (
+                        <td key={timeIndex} className="border border-gray-300 p-2">
+                          {table[dayIndex][timeIndex]}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         );
       })}
@@ -252,6 +284,3 @@ const FullRoutine = () => {
 };
 
 export default FullRoutine;
-
-
-
